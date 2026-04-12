@@ -1,0 +1,6 @@
+# Core
+anthropic>=0.25.0
+python-dotenv>=1.0.0
+
+# Web dashboard
+flask>=3.0.0

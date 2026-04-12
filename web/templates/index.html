@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Space Mission Agent Team</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #181c24;
+    --border: #1e2330;
+    --accent: #00d4ff;
+    --accent2: #7c5cff;
+    --success: #00e096;
+    --warning: #ffb800;
+    --danger: #ff4757;
+    --text: #e8eaf0;
+    --muted: #5a6070;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; overflow-x: hidden; }
+
+  /* Grid scan lines effect */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,212,255,0.015) 2px, rgba(0,212,255,0.015) 4px);
+    pointer-events: none; z-index: 0;
+  }
+
+  .layout { display: grid; grid-template-columns: 280px 1fr; grid-template-rows: 56px 1fr; min-height: 100vh; position: relative; z-index: 1; }
+
+  /* Header */
+  header { grid-column: 1/-1; display: flex; align-items: center; gap: 16px; padding: 0 24px; border-bottom: 1px solid var(--border); background: var(--surface); }
+  .logo { font-family: var(--mono); font-size: 13px; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
+  .logo span { color: var(--muted); }
+  .mission-badge { margin-left: auto; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 4px 12px; font-family: var(--mono); font-size: 11px; color: var(--accent2); }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .status-dot.inactive { background: var(--muted); box-shadow: none; animation: none; }
+
+  /* Sidebar */
+  aside { border-right: 1px solid var(--border); background: var(--surface); overflow-y: auto; }
+  .sidebar-section { padding: 20px 16px 8px; }
+  .sidebar-label { font-family: var(--mono); font-size: 9px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; }
+
+  /* Form */
+  .form-group { margin-bottom: 14px; }
+  label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 6px; font-family: var(--mono); }
+  select, input, textarea {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-family: var(--sans); font-size: 13px;
+    padding: 8px 10px; border-radius: 4px; outline: none;
+    transition: border-color 0.2s;
+  }
+  select:focus, input:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .btn {
+    width: 100%; padding: 10px; border: none; border-radius: 4px;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 1px;
+    cursor: pointer; transition: all 0.2s; text-transform: uppercase;
+  }
+  .btn-primary { background: var(--accent); color: #000; font-weight: 700; }
+  .btn-primary:hover { background: #00b8e0; box-shadow: 0 0 20px rgba(0,212,255,0.3); }
+  .btn-primary:disabled { background: var(--muted); color: var(--bg); cursor: not-allowed; box-shadow: none; }
+  .btn-secondary { background: transparent; color: var(--muted); border: 1px solid var(--border); margin-top: 8px; }
+  .btn-secondary:hover { border-color: var(--muted); color: var(--text); }
+
+  /* Severity pills */
+  .severity-group { display: flex; gap: 6px; }
+  .severity-btn { flex: 1; padding: 6px 4px; border: 1px solid var(--border); background: transparent; border-radius: 4px; font-family: var(--mono); font-size: 10px; cursor: pointer; color: var(--muted); transition: all 0.15s; text-align: center; }
+  .severity-btn.active-critical { border-color: var(--danger); color: var(--danger); background: rgba(255,71,87,0.1); }
+  .severity-btn.active-major { border-color: var(--warning); color: var(--warning); background: rgba(255,184,0,0.1); }
+  .severity-btn.active-minor { border-color: var(--success); color: var(--success); background: rgba(0,224,150,0.1); }
+
+  /* Session panel */
+  .session-info { padding: 16px; border-top: 1px solid var(--border); }
+  .info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .info-key { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .info-val { font-size: 12px; color: var(--text); }
+  .phase-badge { background: var(--accent2); color: #fff; padding: 2px 8px; border-radius: 3px; font-family: var(--mono); font-size: 10px; }
+
+  /* Main content */
+  main { display: grid; grid-template-rows: 1fr 220px; overflow: hidden; }
+
+  /* Output panel */
+  .output-panel { padding: 24px; overflow-y: auto; }
+  .panel-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .panel-title { font-family: var(--mono); font-size: 12px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; }
+
+  /* Sections grid */
+  .sections-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .section-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    padding: 14px; cursor: pointer; transition: all 0.2s;
+  }
+  .section-card:hover { border-color: var(--accent); background: var(--surface2); }
+  .section-card.active { border-color: var(--accent); box-shadow: 0 0 16px rgba(0,212,255,0.1); }
+  .card-agent { font-family: var(--mono); font-size: 10px; color: var(--accent2); margin-bottom: 6px; }
+  .card-title { font-size: 13px; color: var(--text); margin-bottom: 8px; line-height: 1.3; }
+  .card-preview { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+  /* Document viewer */
+  .doc-viewer { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 24px; }
+  .doc-content { font-size: 13px; line-height: 1.8; color: var(--text); white-space: pre-wrap; font-family: var(--sans); }
+  .doc-content h1, .doc-content h2, .doc-content h3 { color: var(--accent); font-family: var(--mono); margin: 16px 0 8px; }
+
+  /* Log panel */
+  .log-panel { border-top: 1px solid var(--border); background: var(--surface); overflow: hidden; display: flex; flex-direction: column; }
+  .log-header { display: flex; align-items: center; gap: 10px; padding: 10px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .log-title { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+  .log-body { flex: 1; overflow-y: auto; padding: 8px 20px; }
+  .log-entry { display: flex; gap: 12px; padding: 3px 0; font-family: var(--mono); font-size: 11px; line-height: 1.4; }
+  .log-ts { color: var(--muted); flex-shrink: 0; }
+  .log-msg { color: var(--text); }
+  .log-msg.success { color: var(--success); }
+  .log-msg.error { color: var(--danger); }
+  .log-msg.start { color: var(--accent); }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 2px; margin-bottom: 16px; }
+  .tab { padding: 6px 14px; font-family: var(--mono); font-size: 11px; cursor: pointer; border-radius: 3px; color: var(--muted); border: 1px solid transparent; transition: all 0.15s; }
+  .tab.active { color: var(--accent); border-color: var(--border); background: var(--surface2); }
+
+  /* API key warning */
+  .api-warning { background: rgba(255,184,0,0.1); border: 1px solid var(--warning); border-radius: 4px; padding: 10px 12px; margin-bottom: 14px; font-size: 11px; color: var(--warning); }
+  .api-warning a { color: var(--warning); }
+
+  /* Files list */
+  .files-list { display: flex; flex-direction: column; gap: 6px; }
+  .file-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; transition: border-color 0.15s; font-family: var(--mono); font-size: 11px; }
+  .file-item:hover { border-color: var(--accent); }
+  .file-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); flex-shrink: 0; }
+  .file-name { color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* No API key overlay */
+  .no-api { opacity: 0.5; pointer-events: none; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Header -->
+  <header>
+    <div class="logo">🛰 <span>//</span> Space Mission Agent Team</div>
+    <div id="run-indicator" class="status-dot inactive"></div>
+    <span id="run-label" style="font-family:var(--mono);font-size:11px;color:var(--muted)">IDLE</span>
+    <div class="mission-badge" id="mission-badge">{{ session.mission_name }}</div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside>
+    {% if not has_api_key %}
+    <div class="sidebar-section">
+      <div class="api-warning">
+        No API key found. Add <code>ANTHROPIC_API_KEY</code> to your <code>.env</code> file.<br>
+        <a href="https://console.anthropic.com" target="_blank">Get a key →</a>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="sidebar-section {% if not has_api_key %}no-api{% endif %}">
+      <div class="sidebar-label">Start from agent</div>
+
+      <div class="form-group">
+        <label>Mission name</label>
+        <input type="text" id="mission-name" value="{{ session.mission_name }}" placeholder="MY-SAT-1">
+      </div>
+
+      <div class="form-group">
+        <label>From agent</label>
+        <select id="from-agent">
+          <option value="">— select agent —</option>
+          <option value="User">User (full pipeline)</option>
+          {% for agent in agents %}
+          <option value="{{ agent }}">{{ agent }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Description / objective / change</label>
+        <textarea id="description" placeholder="Describe the mission objective, the change, or the task..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Change severity</label>
+        <div class="severity-group">
+          <div class="severity-btn" onclick="setSeverity('MINOR')">MINOR</div>
+          <div class="severity-btn active-major" onclick="setSeverity('MAJOR')">MAJOR</div>
+          <div class="severity-btn" onclick="setSeverity('CRITICAL')">CRITICAL</div>
+        </div>
+        <input type="hidden" id="severity" value="MAJOR">
+      </div>
+
+      <button class="btn btn-primary" id="run-btn" onclick="startRun()">▶ RUN</button>
+
+      <div class="sidebar-label" style="margin-top:20px">Milestone review</div>
+      <div class="form-group">
+        <select id="milestone-select">
+          <option value="">— select milestone —</option>
+          {% for m in milestones %}
+          <option value="{{ m }}">{{ m }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="startMilestone()">▶ RUN MILESTONE</button>
+      <button class="btn btn-secondary" onclick="clearSession()">⊘ Clear Session</button>
+    </div>
+
+    <!-- Session info -->
+    <div class="session-info">
+      <div class="sidebar-label">Session</div>
+      <div class="info-row"><span class="info-key">Phase</span><span class="phase-badge" id="phase-val">{{ session.phase }}</span></div>
+      <div class="info-row"><span class="info-key">Milestone</span><span class="info-val" id="milestone-val">{{ session.last_milestone or '—' }}</span></div>
+      <div class="info-row"><span class="info-key">Sections</span><span class="info-val" id="sections-val">{{ session.results|length }}</span></div>
+      <div class="info-row"><span class="info-key">Changes</span><span class="info-val" id="changes-val">{{ session.change_log|length }}</span></div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main>
+    <div class="output-panel">
+      <div class="panel-header">
+        <div class="panel-title">Outputs</div>
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab('sections', this)">Baseline</div>
+          <div class="tab" onclick="switchTab('files', this)">Files</div>
+          <div class="tab" onclick="switchTab('viewer', this)">Viewer</div>
+        </div>
+      </div>
+
+      <!-- Sections tab -->
+      <div id="tab-sections">
+        <div class="sections-grid" id="sections-grid">
+          {% for title, content in session.results.items() %}
+          <div class="section-card" onclick="viewSection('{{ title }}')">
+            <div class="card-agent">{{ title.split(' ')[0] }}</div>
+            <div class="card-title">{{ title }}</div>
+            <div class="card-preview">{{ content[:120] }}...</div>
+          </div>
+          {% else %}
+          <div style="color:var(--muted);font-size:13px;grid-column:1/-1;padding:40px 0;">
+            No outputs yet. Start a run from the sidebar.
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Files tab -->
+      <div id="tab-files" style="display:none">
+        <div class="files-list" id="files-list">Loading...</div>
+      </div>
+
+      <!-- Viewer tab -->
+      <div id="tab-viewer" style="display:none">
+        <div class="doc-viewer">
+          <div class="doc-content" id="doc-content">Select a section or file to view it here.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Log panel -->
+    <div class="log-panel">
+      <div class="log-header">
+        <div class="log-title">Agent log</div>
+        <div id="run-indicator2" class="status-dot inactive" style="margin-left:auto"></div>
+      </div>
+      <div class="log-body" id="log-body">
+        <div class="log-entry"><span class="log-ts">--:--:--</span><span class="log-msg">Ready. Configure a run and press ▶ RUN.</span></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+let severity = 'MAJOR';
+let activeTab = 'sections';
+let eventSource = null;
+
+function setSeverity(s) {
+  severity = s;
+  document.getElementById('severity').value = s;
+  document.querySelectorAll('.severity-btn').forEach(b => {
+    b.className = 'severity-btn';
+    if (b.textContent === s) b.classList.add(`active-${s.toLowerCase()}`);
+  });
+}
+
+function switchTab(tab, el) {
+  activeTab = tab;
+  ['sections','files','viewer'].forEach(t => {
+    document.getElementById(`tab-${t}`).style.display = t === tab ? '' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  if (tab === 'files') loadFiles();
+}
+
+async function startRun() {
+  const fromAgent = document.getElementById('from-agent').value;
+  const description = document.getElementById('description').value;
+  const missionName = document.getElementById('mission-name').value;
+  if (!fromAgent) { alert('Select an agent to start from.'); return; }
+
+  setRunning(true);
+  connectStream();
+
+  await fetch('/api/run', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ from_agent: fromAgent, description, severity, mission_name: missionName })
+  });
+}
+
+async function startMilestone() {
+  const milestone = document.getElementById('milestone-select').value;
+  const missionName = document.getElementById('mission-name').value;
+  if (!milestone) { alert('Select a milestone.'); return; }
+
+  setRunning(true);
+  connectStream();
+
+  await fetch('/api/run', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ milestone, mission_name: missionName })
+  });
+}
+
+function connectStream() {
+  if (eventSource) eventSource.close();
+  eventSource = new EventSource('/api/stream');
+  eventSource.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    if (data.done) {
+      setRunning(false);
+      refreshSession();
+      if (activeTab === 'sections') refreshSections();
+      eventSource.close();
+      return;
+    }
+    if (data.ping) return;
+    addLog(data.ts, data.msg, data.level);
+  };
+}
+
+function addLog(ts, msg, level='info') {
+  const body = document.getElementById('log-body');
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  entry.innerHTML = `<span class="log-ts">${ts}</span><span class="log-msg ${level}">${msg}</span>`;
+  body.appendChild(entry);
+  body.scrollTop = body.scrollHeight;
+}
+
+function setRunning(active) {
+  const btn = document.getElementById('run-btn');
+  const dot1 = document.getElementById('run-indicator');
+  const dot2 = document.getElementById('run-indicator2');
+  const label = document.getElementById('run-label');
+  btn.disabled = active;
+  btn.textContent = active ? '⏳ RUNNING...' : '▶ RUN';
+  [dot1, dot2].forEach(d => d.classList.toggle('inactive', !active));
+  label.textContent = active ? 'RUNNING' : 'IDLE';
+}
+
+async function refreshSession() {
+  const data = await (await fetch('/api/session')).json();
+  document.getElementById('phase-val').textContent = data.phase;
+  document.getElementById('milestone-val').textContent = data.last_milestone || '—';
+  document.getElementById('sections-val').textContent = data.sections.length;
+  document.getElementById('changes-val').textContent = data.change_count;
+  document.getElementById('mission-badge').textContent = data.mission_name;
+}
+
+async function refreshSections() {
+  const session = await (await fetch('/api/session')).json();
+  const grid = document.getElementById('sections-grid');
+  grid.innerHTML = '';
+  for (const title of session.sections) {
+    const card = document.createElement('div');
+    card.className = 'section-card';
+    card.onclick = () => viewSection(title);
+    card.innerHTML = `<div class="card-agent">${title.split(' ')[0]}</div><div class="card-title">${title}</div><div class="card-preview">Click to view</div>`;
+    grid.appendChild(card);
+  }
+  if (!session.sections.length) {
+    grid.innerHTML = '<div style="color:var(--muted);font-size:13px;grid-column:1/-1;padding:40px 0;">No outputs yet.</div>';
+  }
+}
+
+async function viewSection(title) {
+  switchTab('viewer', document.querySelectorAll('.tab')[2]);
+  const data = await (await fetch(`/api/section/${encodeURIComponent(title)}`)).json();
+  document.getElementById('doc-content').textContent = data.content;
+  document.querySelectorAll('.section-card').forEach(c => c.classList.toggle('active', c.querySelector('.card-title')?.textContent === title));
+}
+
+async function loadFiles() {
+  const data = await (await fetch('/api/outputs')).json();
+  const list = document.getElementById('files-list');
+  list.innerHTML = '';
+  if (!data.files.length) { list.innerHTML = '<div style="color:var(--muted);font-size:13px">No output files yet.</div>'; return; }
+  data.files.forEach(f => {
+    const item = document.createElement('div');
+    item.className = 'file-item';
+    item.onclick = () => loadFile(f);
+    item.innerHTML = `<div class="file-dot"></div><div class="file-name">${f}</div>`;
+    list.appendChild(item);
+  });
+}
+
+async function loadFile(filename) {
+  switchTab('viewer', document.querySelectorAll('.tab')[2]);
+  const data = await (await fetch(`/api/output/${filename}`)).json();
+  document.getElementById('doc-content').textContent = data.content;
+}
+
+async function clearSession() {
+  if (!confirm('Clear session state? This resets the mission baseline.')) return;
+  await fetch('/api/clear-session', { method: 'POST' });
+  await refreshSession();
+  await refreshSections();
+  addLog(new Date().toTimeString().slice(0,8), 'Session cleared', 'info');
+}
+</script>
+</body>
+</html>
