@@ -1,75 +1,150 @@
 {
   "_meta": {
     "version": "1.0",
-    "description": "Directed dependency graph of the space mission agent team. A→B means a change in A has direct impact on B.",
-    "schema": "Each key is an agent name; value is a list of directly downstream agent names."
+    "description": "Directed dependency graph. A\u2192B means a change in A has direct impact on B. Transitive impacts resolved at runtime by ImpactMap.",
+    "schema": "Each key is an agent name; value is list of directly downstream agent names. All referenced names must appear as top-level keys."
   },
   "User": [
-    "Project Manager", "Mission Director", "Mission Analyst",
-    "Bid Manager", "Proposal Manager", "R&D Manager"
+    "Project Manager",
+    "Mission Director",
+    "Mission Analyst",
+    "Bid Manager",
+    "Proposal Manager",
+    "R&D Manager"
   ],
   "Project Manager": [
-    "Mission Director", "Project Controller", "Document Manager",
-    "Proposal Manager", "Bid Manager"
-  ],
-  "Mission Analyst": [
-    "Mission Director", "Payload Engineer", "EPS Engineer", "ADCS Engineer",
-    "Thermal Engineer", "Structures Engineer", "Propulsion Engineer",
-    "TTC Engineer", "OBSW Engineer", "Mechanical Engineer",
-    "Electrical Engineer", "Antenna Engineer"
+    "Mission Director",
+    "Project Controller",
+    "Document Manager",
+    "Proposal Manager",
+    "Bid Manager"
   ],
   "Mission Director": [
-    "QA/PA Engineer", "Document Manager", "Project Controller"
+    "Mission Analyst",
+    "Payload Engineer",
+    "EPS Engineer",
+    "ADCS Engineer",
+    "Thermal Engineer",
+    "Structures Engineer",
+    "Propulsion Engineer",
+    "Mechanical Engineer",
+    "Electrical Engineer",
+    "Antenna Engineer",
+    "TT&C Engineer",
+    "OBSW Engineer",
+    "QA/PA Engineer",
+    "Project Controller"
+  ],
+  "Mission Analyst": [
+    "Propulsion Engineer",
+    "EPS Engineer",
+    "ADCS Engineer",
+    "Thermal Engineer",
+    "TT&C Engineer",
+    "Structures Engineer"
   ],
   "Payload Engineer": [
-    "EPS Engineer", "Thermal Engineer", "Structures Engineer",
-    "OBSW Engineer", "Electrical Engineer"
-  ],
-  "EPS Engineer": [
-    "Thermal Engineer", "OBSW Engineer", "Electrical Engineer"
-  ],
-  "ADCS Engineer": [
-    "Structures Engineer", "Propulsion Engineer", "OBSW Engineer",
-    "Electrical Engineer"
-  ],
-  "Thermal Engineer": [
-    "Structures Engineer", "Mechanical Engineer"
-  ],
-  "Structures Engineer": [
-    "Mechanical Engineer", "Launch Campaign Manager"
+    "EPS Engineer",
+    "ADCS Engineer",
+    "Thermal Engineer",
+    "Structures Engineer",
+    "TT&C Engineer",
+    "Antenna Engineer",
+    "OBSW Engineer",
+    "Mechanical Engineer"
   ],
   "Propulsion Engineer": [
-    "EPS Engineer", "Structures Engineer", "Safety Engineer"
+    "Structures Engineer",
+    "Thermal Engineer",
+    "EPS Engineer",
+    "ADCS Engineer",
+    "Mechanical Engineer"
   ],
-  "TTC Engineer": [
-    "Antenna Engineer", "OBSW Engineer", "Ground Segment Engineer"
+  "EPS Engineer": [
+    "Structures Engineer",
+    "Thermal Engineer",
+    "Electrical Engineer",
+    "Mechanical Engineer",
+    "OBSW Engineer"
   ],
-  "OBSW Engineer": [
-    "QA/PA Engineer", "Document Manager"
+  "ADCS Engineer": [
+    "Structures Engineer",
+    "Mechanical Engineer",
+    "EPS Engineer",
+    "OBSW Engineer",
+    "Propulsion Engineer"
   ],
-  "Mechanical Engineer": [
+  "Thermal Engineer": [
+    "EPS Engineer",
+    "Structures Engineer",
+    "Mechanical Engineer"
+  ],
+  "Structures Engineer": [
+    "Mechanical Engineer",
+    "Thermal Engineer",
+    "Propulsion Engineer",
+    "EPS Engineer"
+  ],
+  "TT&C Engineer": [
+    "Antenna Engineer",
+    "OBSW Engineer",
     "Electrical Engineer"
   ],
-  "Safety Engineer": [
-    "QA/PA Engineer", "Mission Director"
+  "Mechanical Engineer": [
+    "Electrical Engineer",
+    "Structures Engineer"
   ],
-  "Ground Segment Engineer": [
-    "Document Manager"
+  "Electrical Engineer": [
+    "OBSW Engineer",
+    "TT&C Engineer"
+  ],
+  "Antenna Engineer": [
+    "Structures Engineer",
+    "Electrical Engineer"
+  ],
+  "OBSW Engineer": [
+    "TT&C Engineer",
+    "ADCS Engineer"
   ],
   "QA/PA Engineer": [
-    "Document Manager", "Mission Director"
-  ],
-  "Document Manager": [],
-  "Project Controller": [
+    "Mission Director",
+    "Project Controller",
     "Document Manager"
   ],
   "Proposal Manager": [
-    "Bid Manager", "Document Manager"
+    "Bid Manager",
+    "Project Controller"
   ],
   "Bid Manager": [
-    "Document Manager"
+    "Project Controller",
+    "Project Manager"
   ],
   "R&D Manager": [
-    "Mission Director", "QA/PA Engineer", "Document Manager"
+    "Proposal Manager",
+    "Mission Director"
+  ],
+  "Project Controller": [
+    "Project Manager",
+    "Document Manager"
+  ],
+  "Document Manager": [],
+  "Safety Engineer": [
+    "Mission Director",
+    "QA/PA Engineer",
+    "Propulsion Engineer",
+    "OBSW Engineer",
+    "Structures Engineer",
+    "Ground Segment Engineer"
+  ],
+  "Ground Segment Engineer": [
+    "TT&C Engineer",
+    "OBSW Engineer",
+    "Mission Director"
+  ],
+  "Launch Campaign Manager": [
+    "Structures Engineer",
+    "Propulsion Engineer",
+    "Mission Analyst",
+    "Ground Segment Engineer"
   ]
 }
