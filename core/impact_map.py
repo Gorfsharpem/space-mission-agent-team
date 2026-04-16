@@ -1,7 +1,13 @@
 """
 Impact Map
 ----------
-Static dependency graph of the mission team.
+Loads the directed dependency graph from config/dependency_graph.json.
+
+Inspired by the HLA FOM approach: topology is declared externally,
+not hardcoded in the execution layer. This allows team restructuring,
+new pipelines, and mission-specific variants without touching Python source.
+
+Description of the model behing the static dependency graph of the mission team.
 
 When a change is raised by agent X, the Impact Map answers:
   "Which other agents are downstream of X and must review this change?"
@@ -12,162 +18,84 @@ Transitive impacts are resolved automatically.
 This is the core of the change propagation strategy.
 """
 
+
 from __future__ import annotations
 
-# fmt: off
-DEPENDENCY_GRAPH: dict[str, list[str]] = {
-    # ── Business / top-level ──────────────────────────────────────────────
-    # A change to the business objective or user requirements touches everything.
-    "User": [
-        "Project Manager", "Mission Director", "Mission Analyst",
-        "Bid Manager", "Proposal Manager", "R&D Manager",
-    ],
-    "Project Manager": [
-        "Mission Director", "Project Controller", "Document Manager",
-        "Proposal Manager", "Bid Manager",
-    ],
+import json
+from functools import lru_cache
+from pathlib import Path
 
-    # ── Systems engineering ───────────────────────────────────────────────
-    # A system requirement change by the Mission Director cascades to all subsystems.
-    "Mission Director": [
-        "Mission Analyst", "Payload Engineer", "EPS Engineer", "ADCS Engineer",
-        "Thermal Engineer", "Structures Engineer", "Propulsion Engineer",
-        "Mechanical Engineer", "Electrical Engineer", "Antenna Engineer",
-        "TT&C Engineer", "OBSW Engineer", "QA/PA Engineer", "Project Controller",
-    ],
+_CONFIG_PATH = Path(__file__).resolve().parent.parent / "config" / "dependency_graph.json"
 
-    # ── Mission analysis ──────────────────────────────────────────────────
-    # Orbit / launch / delta-V changes cascade to propulsion, power, thermal, ADCS.
-    "Mission Analyst": [
-        "Propulsion Engineer", "EPS Engineer", "ADCS Engineer",
-        "Thermal Engineer", "TT&C Engineer", "Structures Engineer",
-    ],
+def load_dependency_graph(path: Path = _CONFIG_PATH) -> dict[str, list[str]]:
+    """Load and validate the dependency graph from a JSON config file."""
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Dependency graph config not found at: {path}\n"
+            "Expected: config/dependency_graph.json"
+        )
+    with path.open("r", encoding="utf-8") as f:
+        data: dict = json.load(f)
 
-    # ── Payload ──────────────────────────────────────────────────────────
-    # Payload changes drive power, data, pointing, thermal, downlink, and structure.
-    "Payload Engineer": [
-        "EPS Engineer", "ADCS Engineer", "Thermal Engineer",
-        "Structures Engineer", "TT&C Engineer", "Antenna Engineer",
-        "OBSW Engineer", "Mechanical Engineer",
-    ],
+    # Strip meta key if present
+    graph = {k: v for k, v in data.items() if not k.startswith("_")}
 
-    # ── Propulsion ───────────────────────────────────────────────────────
-    # Thruster / propellant changes affect mass, power, thermal, pointing disturbances.
-    "Propulsion Engineer": [
-        "Structures Engineer", "Thermal Engineer", "EPS Engineer",
-        "ADCS Engineer", "Mechanical Engineer",
-    ],
+    _validate_graph(graph)
+    return graph
 
-    # ── EPS ──────────────────────────────────────────────────────────────
-    # Power budget changes affect every power consumer; harness affects electrical + mechanical.
-    "EPS Engineer": [
-        "Structures Engineer", "Thermal Engineer", "Electrical Engineer",
-        "Mechanical Engineer", "OBSW Engineer",
-    ],
 
-    # ── ADCS ─────────────────────────────────────────────────────────────
-    # Attitude change affects mechanical mounting, power, software, and propulsion (desaturation).
-    "ADCS Engineer": [
-        "Structures Engineer", "Mechanical Engineer", "EPS Engineer",
-        "OBSW Engineer", "Propulsion Engineer",
-    ],
+def _validate_graph(graph: dict[str, list[str]]) -> None:
+    """Ensure all referenced agents exist as top-level keys."""
+    all_agents = set(graph.keys())
+    for source, targets in graph.items():
+        for t in targets:
+            if t not in all_agents:
+                raise ValueError(
+                    f"Dependency graph: agent '{t}' referenced as downstream of "
+                    f"'{source}' but has no own entry. Add '{t}' as a key."
+                )
 
-    # ── Thermal ──────────────────────────────────────────────────────────
-    # Heater power changes affect EPS; structural changes affect MLI accommodation.
-    "Thermal Engineer": [
-        "EPS Engineer", "Structures Engineer", "Mechanical Engineer",
-    ],
 
-    # ── Structures ───────────────────────────────────────────────────────
-    # Configuration or mass changes affect mechanical, thermal (MLI areas), and propulsion sizing.
-    "Structures Engineer": [
-        "Mechanical Engineer", "Thermal Engineer", "Propulsion Engineer",
-        "EPS Engineer",
-    ],
-
-    # ── TT&C ─────────────────────────────────────────────────────────────
-    # Frequency or data rate changes drive antenna redesign, OBSW, and electrical.
-    "TT&C Engineer": [
-        "Antenna Engineer", "OBSW Engineer", "Electrical Engineer",
-    ],
-
-    # ── Mechanical ───────────────────────────────────────────────────────
-    # Harness routing changes affect electrical; mechanism changes affect structures.
-    "Mechanical Engineer": [
-        "Electrical Engineer", "Structures Engineer",
-    ],
-
-    # ── Electrical ───────────────────────────────────────────────────────
-    # Grounding / EMC changes affect OBSW (data bus shielding) and TT&C (RF environment).
-    "Electrical Engineer": [
-        "OBSW Engineer", "TT&C Engineer",
-    ],
-
-    # ── Antenna ──────────────────────────────────────────────────────────
-    # Antenna mass/volume change affects structures; RF environment affects electrical.
-    "Antenna Engineer": [
-        "Structures Engineer", "Electrical Engineer",
-    ],
-
-    # ── OBSW ─────────────────────────────────────────────────────────────
-    # Software interface changes affect TT&C and ADCS command handling.
-    "OBSW Engineer": [
-        "TT&C Engineer", "ADCS Engineer",
-    ],
-
-    # ── QA/PA ─────────────────────────────────────────────────────────────
-    # QA findings cascade back to Mission Director for disposition.
-    "QA/PA Engineer": [
-        "Mission Director", "Project Controller", "Document Manager",
-    ],
-
-    # ── Business dev agents ───────────────────────────────────────────────
-    "Proposal Manager": [
-        "Bid Manager", "Project Controller",
-    ],
-    "Bid Manager": [
-        "Project Controller", "Project Manager",
-    ],
-    "R&D Manager": [
-        "Proposal Manager", "Mission Director",
-    ],
-    "Project Controller": [
-        "Project Manager", "Document Manager",
-    ],
-    "Document Manager": [],
-
-    # ── Safety Engineer ───────────────────────────────────────────────────
-    # Safety findings cascade to all subsystems and Mission Director.
-    "Safety Engineer": [
-        "Mission Director", "QA/PA Engineer", "Propulsion Engineer",
-        "OBSW Engineer", "Structures Engineer", "Ground Segment Engineer",
-    ],
-
-    # ── Ground Segment Engineer ───────────────────────────────────────────
-    # Ground segment changes affect TT&C, OBSW, and operations planning.
-    "Ground Segment Engineer": [
-        "TT&C Engineer", "OBSW Engineer", "Mission Director",
-    ],
-
-    # ── Launch Campaign Manager ───────────────────────────────────────────
-    # Launch campaign changes affect structures (LV interface), propulsion (fuelling).
-    "Launch Campaign Manager": [
-        "Structures Engineer", "Propulsion Engineer", "Mission Analyst",
-        "Ground Segment Engineer",
-    ],
-
-}
-# fmt: on
-
+# Cached singleton — loaded once at import time
+DEPENDENCY_GRAPH: dict[str, list[str]] = load_dependency_graph()
 
 class ImpactMap:
     """
-    Resolves which agents are affected (directly or transitively)
-    by a change originating from a given source agent.
+    Resolves transitive downstream impact for any source agent: which agents are
+    affected (directly or transitively) by a change originating from a given source agent. ?
+
+    Usage:
+        im = ImpactMap()
+        affected = im.resolve("EPS Engineer")
+        # → {"Thermal Engineer", "OBSW Engineer", "Electrical Engineer", ...}
+
+    Resolves 
     """
 
-    def __init__(self):
-        self._graph = DEPENDENCY_GRAPH
+    def __init__(self, graph: dict[str, list[str]] | None = None):
+        self._graph = graph or DEPENDENCY_GRAPH
+
+    @lru_cache(maxsize=None)
+    def resolve(self, source_agent: str) -> frozenset[str]:
+        """Return all agents transitively downstream of source_agent."""
+        visited: set[str] = set()
+        self._dfs(source_agent, visited)
+        visited.discard(source_agent)
+        return frozenset(visited)
+
+    def _dfs(self, node: str, visited: set[str]) -> None:
+        if node in visited:
+            return
+        visited.add(node)
+        for neighbour in self._graph.get(node, []):
+            self._dfs(neighbour, visited)
+
+    def direct_downstream(self, source_agent: str) -> list[str]:
+        """Return only direct (non-transitive) downstream agents."""
+        return list(self._graph.get(source_agent, []))
+
+    def all_agents(self) -> list[str]:
+        return list(self._graph.keys())
 
     def direct_impacts(self, source: str) -> list[str]:
         return self._graph.get(source, [])
