@@ -20,12 +20,7 @@ import os
 from datetime import datetime
 
 from core import MessageBus, AgentNetwork
-from agents import (
-    RnDManagerAgent, ProposalManagerAgent, BidManagerAgent,
-    ProjectManagerAgent, ProjectControllerAgent,
-    QAPAAgent, DocumentManagerAgent, MissionDirectorAgent,
-)
-
+from core.agent_factory import build_agent_roster
 
 class RnDPipeline:
     def __init__(self, project_name: str, idea: str, output_dir: str = "outputs"):
@@ -39,19 +34,26 @@ class RnDPipeline:
         self.bus = MessageBus()
         self.network = AgentNetwork(self.bus)
 
-        self.rnd      = RnDManagerAgent()
-        self.proposal = ProposalManagerAgent()
-        self.bid      = BidManagerAgent()
-        self.pm       = ProjectManagerAgent()
-        self.ctrl     = ProjectControllerAgent()
-        self.qa       = QAPAAgent()
-        self.doc_mgr  = DocumentManagerAgent()
-        self.director = MissionDirectorAgent()
-
-        for agent in [self.rnd, self.proposal, self.bid, self.pm,
-                      self.ctrl, self.qa, self.doc_mgr, self.director]:
+        roster = build_agent_roster(
+            only=[
+                "R&D Manager", "Proposal Manager", "Bid Manager",
+                "Project Manager", "Project Controller",
+                "QA/PA Engineer", "Document Manager", "Mission Director",
+            ]
+        )
+        for agent in roster.values():
             agent.network = self.network
             self.network.register(agent)
+
+        # Convenience aliases — identical names to before, zero downstream breakage
+        self.rnd      = roster["R&D Manager"]
+        self.proposal = roster["Proposal Manager"]
+        self.bid      = roster["Bid Manager"]
+        self.pm       = roster["Project Manager"]
+        self.ctrl     = roster["Project Controller"]
+        self.qa       = roster["QA/PA Engineer"]
+        self.doc_mgr  = roster["Document Manager"]
+        self.director = roster["Mission Director"]
 
     def _log(self, msg: str):
         print(f"[{datetime.utcnow().strftime('%H:%M:%S')}] {msg}")

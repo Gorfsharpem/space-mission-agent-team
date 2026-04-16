@@ -17,10 +17,7 @@ import os
 from datetime import datetime
 
 from core import MessageBus, AgentNetwork
-from agents import (
-    BidManagerAgent, ProposalManagerAgent, ProjectControllerAgent,
-    QAPAAgent, DocumentManagerAgent, RnDManagerAgent,
-)
+from core.agent_factory import build_agent_roster
 
 
 class ProposalPipeline:
@@ -42,16 +39,23 @@ class ProposalPipeline:
         self.bus = MessageBus()
         self.network = AgentNetwork(self.bus)
 
-        self.bid      = BidManagerAgent()
-        self.proposal = ProposalManagerAgent()
-        self.ctrl     = ProjectControllerAgent()
-        self.qa       = QAPAAgent()
-        self.doc_mgr  = DocumentManagerAgent()
-        self.rnd      = RnDManagerAgent()
-
-        for agent in [self.bid, self.proposal, self.ctrl, self.qa, self.doc_mgr, self.rnd]:
+        roster = build_agent_roster(
+            only=[
+                "Bid Manager", "Proposal Manager", "Project Controller",
+                "QA/PA Engineer", "Document Manager", "R&D Manager",
+            ]
+        )
+        for agent in roster.values():
             agent.network = self.network
             self.network.register(agent)
+
+        # Convenience aliases
+        self.bid      = roster["Bid Manager"]
+        self.proposal = roster["Proposal Manager"]
+        self.ctrl     = roster["Project Controller"]
+        self.qa       = roster["QA/PA Engineer"]
+        self.doc_mgr  = roster["Document Manager"]
+        self.rnd      = roster["R&D Manager"]
 
     def _log(self, msg: str):
         print(f"[{datetime.utcnow().strftime('%H:%M:%S')}] {msg}")
