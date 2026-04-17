@@ -21,13 +21,7 @@ from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from core import MessageBus, AgentNetwork
-from agents import (
-    MissionDirectorAgent, ProjectManagerAgent, MissionAnalysisAgent,
-    PayloadAgent, EPSAgent, ADCSAgent, ThermalAgent, StructuresAgent,
-    TTCAgent, OBSWAgent, PropulsionAgent, MechanicalAgent,
-    ElectricalAgent, AntennaAgent, QAPAAgent, DocumentManagerAgent,
-    ProjectControllerAgent,
-)
+from core.agent_factory import build_agent_roster
 
 
 class MissionPipeline:
@@ -43,34 +37,39 @@ class MissionPipeline:
         self.bus = MessageBus()
         self.network = AgentNetwork(self.bus)
 
-        # Instantiate all mission agents
-        self.director    = MissionDirectorAgent()
-        self.pm          = ProjectManagerAgent()
-        self.ma          = MissionAnalysisAgent()
-        self.payload     = PayloadAgent()
-        self.eps         = EPSAgent()
-        self.adcs        = ADCSAgent()
-        self.thermal     = ThermalAgent()
-        self.structures  = StructuresAgent()
-        self.ttc         = TTCAgent()
-        self.obsw        = OBSWAgent()
-        self.propulsion  = PropulsionAgent()
-        self.mechanical  = MechanicalAgent()
-        self.electrical  = ElectricalAgent()
-        self.antenna     = AntennaAgent()
-        self.qa_pa       = QAPAAgent()
-        self.doc_mgr     = DocumentManagerAgent()
-        self.controller  = ProjectControllerAgent()
+        roster = build_agent_roster(
+            only=[
+                "Mission Director", "Project Manager", "Mission Analyst",
+                "Payload Engineer", "EPS Engineer", "ADCS Engineer",
+                "Thermal Engineer", "Structures Engineer", "TTC Engineer",
+                "OBSW Engineer", "Propulsion Engineer", "Mechanical Engineer",
+                "Electrical Engineer", "Antenna Engineer", "QA/PA Engineer",
+                "Document Manager", "Project Controller",
+            ]
+        )
 
-        # Register all agents in the network (enables inter-agent queries)
-        for agent in [
-            self.director, self.pm, self.ma, self.payload, self.eps,
-            self.adcs, self.thermal, self.structures, self.ttc, self.obsw,
-            self.propulsion, self.mechanical, self.electrical, self.antenna,
-            self.qa_pa, self.doc_mgr, self.controller,
-        ]:
+        for agent in roster.values():
             agent.network = self.network
             self.network.register(agent)
+
+        # Convenience aliases
+        self.director   = roster["Mission Director"]
+        self.pm         = roster["Project Manager"]
+        self.ma         = roster["Mission Analyst"]
+        self.payload    = roster["Payload Engineer"]
+        self.eps        = roster["EPS Engineer"]
+        self.adcs       = roster["ADCS Engineer"]
+        self.thermal    = roster["Thermal Engineer"]
+        self.structures = roster["Structures Engineer"]
+        self.ttc        = roster["TTC Engineer"]
+        self.obsw       = roster["OBSW Engineer"]
+        self.propulsion = roster["Propulsion Engineer"]
+        self.mechanical = roster["Mechanical Engineer"]
+        self.electrical = roster["Electrical Engineer"]
+        self.antenna    = roster["Antenna Engineer"]
+        self.qa_pa      = roster["QA/PA Engineer"]
+        self.doc_mgr    = roster["Document Manager"]
+        self.controller = roster["Project Controller"]
 
     def _log(self, msg: str):
         print(f"[{datetime.utcnow().strftime('%H:%M:%S')}] {msg}")

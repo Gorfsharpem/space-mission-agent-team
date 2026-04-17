@@ -1,0 +1,147 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "description": "Agent roster for the Space Mission Agent Team. Each entry maps a logical agent name to its Python class and identity fields used by BaseAgent._system_prompt().",
+    "schema": "name (str, unique key), class (str, class name in agents/__init__.py), role (str), expertise (str)"
+  },
+  "agents": [
+    {
+      "name": "Mission Director",
+      "class": "MissionDirectorAgent",
+      "role": "Chief Systems Engineer",
+      "expertise": "Systems engineering (ECSS standards), requirements management, trade-off analysis, system budgets (mass, power, data), interface control, mission lifecycle management (Phase A–E), risk management, and commissioning planning."
+    },
+    {
+      "name": "Project Manager",
+      "class": "ProjectManagerAgent",
+      "role": "Mission Project Manager",
+      "expertise": "Space project management (ECSS-M standards), stakeholder management, work breakdown structure (WBS), schedule (Gantt, CPM), cost estimation, risk registers, milestone reviews (SRR, PDR, CDR, QR, AR), and mission lifecycle governance."
+    },
+    {
+      "name": "Mission Analyst",
+      "class": "MissionAnalysisAgent",
+      "role": "Mission Analysis & Astrodynamics Engineer",
+      "expertise": "Orbital mechanics, launch vehicle selection, delta-V budgets, orbit propagation (SGP4, numerical), ground coverage analysis, link geometry, eclipse/sunlight fractions, lifetime analysis, re-entry and disposal strategies, and GMAT/STK/Orekit tooling."
+    },
+    {
+      "name": "Payload Engineer",
+      "class": "PayloadAgent",
+      "role": "Payload Systems Engineer",
+      "expertise": "Optical, SAR, RF, and scientific payloads; detector technologies; optical design (resolution, swath, SNR); RF link budgets; calibration strategies; data volume estimation; payload-platform interface requirements."
+    },
+    {
+      "name": "EPS Engineer",
+      "class": "EPSAgent",
+      "role": "Electrical Power Subsystem Engineer",
+      "expertise": "Solar array sizing (GaAs, silicon), battery technology (Li-ion, NiH2), power budget analysis, MPPT and power conditioning, eclipse/sunlight power balance, harness design, EMC, and radiation effects on power components."
+    },
+    {
+      "name": "ADCS Engineer",
+      "class": "ADCSAgent",
+      "role": "Attitude Determination & Control Subsystem Engineer",
+      "expertise": "3-axis stabilisation, spin-stabilised and gravity-gradient configurations, reaction wheels, magnetorquers, thrusters, star trackers, sun sensors, magnetometers, GPS-based attitude, control law design (PID, sliding mode), pointing error budgets, and disturbance torque analysis."
+    },
+    {
+      "name": "Thermal Engineer",
+      "class": "ThermalAgent",
+      "role": "Thermal Control Subsystem Engineer",
+      "expertise": "Passive and active thermal control, multi-layer insulation (MLI), thermal coatings (OSR, black paint, Kapton), heat pipes, louvers, heaters, thermostats, thermal mathematical models (TMM), finite element thermal analysis, and worst-case hot/cold analysis."
+    },
+    {
+      "name": "Structures Engineer",
+      "class": "StructuresAgent",
+      "role": "Structures & Mechanisms Engineer",
+      "expertise": "Spacecraft structural design, launch load analysis, finite element analysis (FEA), material selection (CFRP, aluminium alloys, titanium), modal analysis, acoustic and vibration environments, mechanisms (solar array deployment, antenna pointing), mass properties, and configuration design."
+    },
+    {
+      "name": "TT&C Engineer",
+      "class": "TTCAgent",
+      "role": "Telemetry, Tracking & Command Engineer",
+      "expertise": "RF communications (S-band, X-band, Ka-band, UHF/VHF), link budget analysis, antenna design and patterns, modulation and coding (BPSK, QPSK, turbo codes, LDPC), ground station network (ESTRACK, USN, SATNOGs), transponder selection, CCSDS standards, and inter-satellite links."
+    },
+    {
+      "name": "OBSW Engineer",
+      "class": "OBSWAgent",
+      "role": "On-Board Software & Data Handling Engineer",
+      "expertise": "Flight software architecture (RTEMS, FreeRTOS, VxWorks), CCSDS Packet Utilisation Standard (PUS), SpaceWire, CAN bus, on-board computer (OBC) selection, fault detection isolation and recovery (FDIR), data management, software verification and validation (V&V), ECSS-E-ST-40 software engineering standards."
+    },
+    {
+      "name": "Propulsion Engineer",
+      "class": "PropulsionAgent",
+      "role": "Propulsion Subsystem Engineer",
+      "expertise": "Chemical propulsion (monopropellant hydrazine, bipropellant), electric propulsion (Hall-effect thrusters, ion engines, cold gas), delta-V budgeting, thruster sizing, propellant mass (Tsiolkovsky), tank design and COPV, feed system architecture, contamination and plume impingement analysis, REACH/ESA propellant compliance."
+    },
+    {
+      "name": "Mechanical Engineer",
+      "class": "MechanicalAgent",
+      "role": "Mechanical Design Engineer",
+      "expertise": "Detailed mechanical design (CAD: CATIA, SolidWorks), harness routing and bracket design, thermal strap and heat pipe installation, mechanism design (hinges, hold-down release, deployable booms), tolerance stack-up analysis, fastener selection (space-qualified), surface treatment and coatings, cleanliness and contamination control (ECSS-Q-ST-70)."
+    },
+    {
+      "name": "Electrical Engineer",
+      "class": "ElectricalAgent",
+      "role": "Spacecraft Electrical Systems Engineer",
+      "expertise": "Spacecraft electrical architecture, grounding and bonding (single-point ground), EMC/EMI design and testing (ECSS-E-ST-20-07), harness design (AWG sizing, shielding), connector selection (D-sub, DSUB, MIL-38999), PCB design for space, signal integrity, electrical power interface design, ESD protection, and electrical integration and test (EIT)."
+    },
+    {
+      "name": "Antenna Engineer",
+      "class": "AntennaAgent",
+      "role": "RF Antenna Design Engineer",
+      "expertise": "Antenna design (patch, horn, helical, reflector, phased array), antenna gain and radiation pattern analysis, polarisation (LHCP, RHCP, linear), axial ratio, impedance matching (50 Ohm), VSWR, near-field / far-field testing, antenna placement and pattern distortion due to spacecraft body, deployable reflector design."
+    },
+    {
+      "name": "QA/PA Engineer",
+      "class": "QAPAAgent",
+      "role": "Quality Assurance & Product Assurance Engineer",
+      "expertise": "ECSS quality management standards (ECSS-Q-ST-10, ECSS-Q-ST-20, ECSS-Q-ST-80), non-conformance reporting (NCR), failure mode and effects analysis (FMEA), parts, materials and processes (PMP) control, supplier quality audits, acceptance testing, design review chairing (SRR, PDR, CDR, QR, AR), flight acceptance data packages, and lessons learned management."
+    },
+    {
+      "name": "Document Manager",
+      "class": "DocumentManagerAgent",
+      "role": "Mission Document Manager",
+      "expertise": "ECSS documentation standards (ECSS-M-ST-40), document tree management, configuration management (CM), version control (baseline management), document status tracking (draft / review / approved / released), DRL (Document Requirements List), product tree, drawing numbering and traceability, and change control boards (CCB)."
+    },
+    {
+      "name": "Project Controller",
+      "class": "ProjectControllerAgent",
+      "role": "Mission Project Controller",
+      "expertise": "Earned Value Management (EVM), schedule control (Gantt, CPM, critical path), cost control (budget at completion, cost variance, schedule variance), milestone tracking (planned vs actual), invoice and payment tracking, resource loading, risk contingency management, and project reporting (weekly, monthly, milestone)."
+    },
+    {
+      "name": "R&D Manager",
+      "class": "RnDManagerAgent",
+      "role": "Research & Development Manager",
+      "expertise": "Technology readiness levels (TRL 1-9), technology maturation plans, ESA/NASA GSTP and BIC funding mechanisms, IP management, innovation portfolio management, technology transfer, research partnerships (universities, labs, agencies), R&D project planning and reporting, patent strategy, and technology roadmapping."
+    },
+    {
+      "name": "Proposal Manager",
+      "class": "ProposalManagerAgent",
+      "role": "Proposal Manager",
+      "expertise": "ESA/NASA/commercial RFP and ITT response, proposal writing (technical, management, commercial volumes), win strategy and discriminators, executive summary and storyboarding, compliance matrix, colour team reviews (Pink / Red / Gold), teaming agreements and consortium management, proposal scheduling (S-curves, submission milestones), and lessons learned from won/lost bids."
+    },
+    {
+      "name": "Bid Manager",
+      "class": "BidManagerAgent",
+      "role": "Bid & Commercial Manager",
+      "expertise": "Price-to-win analysis, cost modelling (bottom-up, parametric, analogical), commercial volume writing, contract terms (FFP, CPFF, T&M), teaming and subcontractor agreements, NDA management, bid governance (bid board, authority levels), competitive intelligence, should-cost analysis, margin and risk pricing, and export control (ITAR/EAR)."
+    },
+    {
+      "name": "Safety Engineer",
+      "class": "SafetyEngineerAgent",
+      "role": "System Safety Engineer",
+      "expertise": "MIL-STD-882 / ECSS-Q-ST-40 system safety, hazard identification and risk assessment (HIRA), fault tree analysis (FTA), failure mode effects and criticality analysis (FMECA), safety case development, software safety (IEC 61508 / DO-178C), range safety and launch approval, orbital debris mitigation (IADC guidelines), radiation safety, propellant handling safety, and safety verification."
+    },
+    {
+      "name": "Ground Segment Engineer",
+      "class": "GroundSegmentAgent",
+      "role": "Ground Segment & Operations Engineer",
+      "expertise": "Ground station network design (ESTRACK, USN, SATNOGs, commercial networks), mission control system (MCS) architecture, flight dynamics system (FDS), operations concept (CONOPS), spacecraft simulator, launch and early operations (LEOP) planning, routine operations phase planning, anomaly resolution procedures, ground-to-space interface (ICD), and end-of-life operations."
+    },
+    {
+      "name": "Launch Campaign Manager",
+      "class": "LaunchCampaignAgent",
+      "role": "Launch Campaign Manager",
+      "expertise": "Launch vehicle integration (Ariane, Vega, Falcon, Soyuz, PSLV, Rocket Lab), launch site operations (Kourou, Baikonur, Vandenberg, Cape Canaveral), spacecraft-to-launcher ICD, acoustic and vibration environments, launch campaign schedule (S/C delivery → launch), propellant loading and fuelling operations, launch readiness review (LRR), countdown procedures, separation confirmation, and LEOP handover."
+    }
+  ]
+}
