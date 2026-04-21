@@ -1,7 +1,7 @@
 """
 Impact Map
 ----------
-Loads the directed dependency graph from config/dependency_graph.json.
+Loads the directed dependency graph from DEPENDENCY_GRAPH_FILE.
 
 Inspired by the HLA FOM approach: topology is declared externally,
 not hardcoded in the execution layer. This allows team restructuring,
@@ -22,17 +22,21 @@ This is the core of the change propagation strategy.
 from __future__ import annotations
 
 import json
+import os
 from functools import lru_cache
 from pathlib import Path
 
-_CONFIG_PATH = Path(__file__).resolve().parent.parent / "config" / "dependency_graph.json"
+
+DEPENDENCY_GRAPH_FILE = os.environ.get("DEPENDENCY_GRAPH_FILE", "dependency_graph.json")
+
+_CONFIG_PATH = Path(__file__).resolve().parent.parent / "config" / DEPENDENCY_GRAPH_FILE
 
 def load_dependency_graph(path: Path = _CONFIG_PATH) -> dict[str, list[str]]:
     """Load and validate the dependency graph from a JSON config file."""
     if not path.exists():
         raise FileNotFoundError(
             f"Dependency graph config not found at: {path}\n"
-            "Expected: config/dependency_graph.json"
+            "Expected for example: config/dependency_graph.json"
         )
     with path.open("r", encoding="utf-8") as f:
         data: dict = json.load(f)
