@@ -1,0 +1,7 @@
+# This configuration is meant to be used in DEV.
+# As well to setup build environment tools.
+APPNAME="Space Mission Robust Agent Team"
+PACKAGENAME="space_mission_robust_agent_team"
+PACKAGE_DEBIANNAME="space-mission-robust-agent-team"
+SETTINGSENVPREFIX="SMART_"
+VIRTUAL_ENV=${HOME}/venvs/smart

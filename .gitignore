@@ -17,6 +17,7 @@ env/
 
 # Outputs (generated mission documents)
 outputs/*.md
+outputs/*.json
 !outputs/.gitkeep
 
 # IDE
@@ -28,3 +29,5 @@ outputs/*.md
 # OS
 .DS_Store
 Thumbs.db
+
+
