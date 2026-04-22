@@ -212,17 +212,34 @@ update_deps:
 ########################################################################################
 
 # Run Application
+.ONESHELL:
 run: run_dev_infra
+	trap '$(MAKE) stop_dev_infra' EXIT
 	uv run --python $(VIRTUAL_ENV)/bin/python python start.py --from User --mission "MY-SAT-1" --description "..."
 
+.ONESHELL:
 run_web: run_dev_infra
+	trap '$(MAKE) stop_dev_infra' EXIT
 	uv run --python $(VIRTUAL_ENV)/bin/python python web/server.py
 ########################################################################################
 
 # Various Helpers
 run_dev_infra:
 	echo "If you do not provide an API TOKEN to Claude API in Cloud, please run your own agents LLM."
+	echo "OLLAMA is semi-automated with the correct FLAG on 1, yet please make sure it was installed locally."
+ifeq ($(LLM_BACKEND), ollama-local)
+	sudo systemctl start ollama
 	ollama pull $$LLM_MODEL
+else
+	echo "Skipping Ollama — using llama.cpp or remote API"
+	echo "TODO"
+endif
+
+stop_dev_infra:
+ifeq ($(LLM_BACKEND), ollama-local)
+	sudo systemctl stop ollama
+	sudo systemctl disable ollama
+endif
 ########################################################################################
 
 ################

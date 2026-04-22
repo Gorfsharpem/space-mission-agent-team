@@ -12,9 +12,9 @@ def build_provider():
     if backend == "anthropic":
         return CloudAnthropicProvider()
 
-    if backend == "ollama":
+    if backend in ("ollama", "ollama-local"):
         return OllamaAnthropicProvider()
 
     raise ValueError(
-        f"Unsupported LLM_BACKEND='{backend}'. Expected one of: anthropic, ollama."
+        f"Unsupported LLM_BACKEND='{backend}'. Expected one of: anthropic, ollama, ollama-local."
     )
