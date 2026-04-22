@@ -7,6 +7,11 @@ from providers.base import LLMProvider
 
 from settings import MAX_TOKENS, NO_THINK
 
+QWEN3_NO_THINK_MODELS = {
+    "qwen3", "qwen3:latest",
+    "qwen3:0.6b", "qwen3:1.7b", "qwen3:4b", "qwen3:8b", "qwen3:14b", "qwen3:30b", "qwen3:32b", "qwen3:235b"
+}
+
 class OllamaAnthropicProvider(LLMProvider):
     def __init__(self, base_url: str | None = None, api_key: str | None = None):
         self.client = anthropic.Anthropic(
@@ -22,12 +27,16 @@ class OllamaAnthropicProvider(LLMProvider):
 
     def generate(self, *, system: str, user: str, model: str, max_tokens: int = MAX_TOKENS) -> str:
         extra = {}
-        if NO_THINK:
-            # This is a qwen3 specific tuning for disabling thinking mode
-            system = f"/no_think\n\n{system}"
-            print(system)
-        else:
-            extra["thinking"] = {"type": "enabled", "budget_tokens": 8000}
+        is_qwen3 = any(m in model.lower() for m in QWEN3_NO_THINK_MODELS)
+
+        if is_qwen3:
+            if NO_THINK:
+                # Qwen3-specific: disable thinking via system prompt prefix
+                system = f"/no_think\n\n{system}"
+            else:
+                # Qwen3-specific: enable extended thinking budget
+                extra["thinking"] = {"type": "enabled", "budget_tokens": round(max_tokens/2)}
+        # Non-Qwen3 models: no thinking manipulation at all        
         
         response = self.client.messages.create(
             model=model,
