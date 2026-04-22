@@ -1,7 +1,7 @@
 """
 Agent Factory
 -------------
-Instantiates agents from config/agents.json.
+Instantiates agents from config file.
 
 Replaces the hardcoded per-pipeline instantiation blocks.
 Each pipeline calls build_agent_roster(only=[...]) to get exactly
@@ -12,13 +12,16 @@ from __future__ import annotations
 
 import importlib
 import json
+import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from agents.base_agent import BaseAgent
 
-_AGENTS_CONFIG = Path(__file__).resolve().parent.parent / "config" / "agents.json"
+AGENTS_FILE = os.environ.get("AGENTS_FILE", "agents.json")
+
+_AGENTS_CONFIG = Path(__file__).resolve().parent.parent / "config" / AGENTS_FILE
 
 
 def build_agent_roster(
@@ -31,20 +34,20 @@ def build_agent_roster(
     Args:
         only: Optional list of agent names to instantiate.
               If None, all agents in config are instantiated.
-              Names must match the 'name' field in agents.json exactly.
-        path: Path to agents.json config. Defaults to config/agents.json.
+              Names must match the 'name' field in AGENTS_FILE exactly.
+        path: Path to AGENTS_FILE config. Defaults to config/agents.json.
 
     Returns:
         Dict mapping agent name → agent instance.
 
     Raises:
-        FileNotFoundError: if agents.json is missing.
+        FileNotFoundError: if AGENTS_FILE is missing.
         ValueError: if a name in `only` is not found in config.
     """
     if not path.exists():
         raise FileNotFoundError(
             f"Agent config not found at: {path}\n"
-            "Expected: config/agents.json"
+            "Expected for example: config/agents.json"
         )
 
     with path.open("r", encoding="utf-8") as f:

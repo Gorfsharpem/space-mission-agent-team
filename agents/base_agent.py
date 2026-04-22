@@ -11,8 +11,9 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING
 
-import anthropic
 from core.critical_review import CriticalReviewMixin
+from providers.factory import build_provider
+from settings import MAX_TOKENS
 
 if TYPE_CHECKING:
     from core.agent_network import AgentNetwork
@@ -26,8 +27,11 @@ class BaseAgent(CriticalReviewMixin):
         self.name = name
         self.role = role
         self.expertise = expertise
-        self.client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+        self.provider = build_provider()
         self.network: "AgentNetwork | None" = None  # injected by pipeline
+
+    def _model(self) -> str:
+        return os.environ.get("LLM_MODEL", self.MODEL)
 
     def _system_prompt(self) -> str:
         return (
@@ -48,13 +52,12 @@ class BaseAgent(CriticalReviewMixin):
         if context:
             user_message = f"## Mission Context\n\n{context}\n\n---\n\n## Your Task\n\n{task}"
 
-        response = self.client.messages.create(
-            model=self.MODEL,
-            max_tokens=2048,
+        return self.provider.generate(
             system=self._system_prompt(),
-            messages=[{"role": "user", "content": user_message}],
+            user=user_message,
+            model=self._model(),
+            max_tokens=MAX_TOKENS,
         )
-        return response.content[0].text
 
     def ask_agent(self, target_name: str, question: str, context: str = "") -> str:
         if self.network is None:

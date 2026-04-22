@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "description": "Directed dependency graph. A\u2192B means a change in A has direct impact on B. Transitive impacts resolved at runtime by ImpactMap.",
+    "schema": "Each key is an agent name; value is list of directly downstream agent names. All referenced names must appear as top-level keys."
+  },
+  "User": [
+    "Project Manager",
+    "Mission Director",
+    "Mission Analyst"
+  ],
+  "Project Manager": [
+    "Mission Director"
+  ],
+  "Mission Director": [
+    "Mission Analyst"
+  ],
+  "Mission Analyst": [
+    "R&D Manager"
+  ],
+  "R&D Manager": [
+    "Mission Director"
+  ]
+}

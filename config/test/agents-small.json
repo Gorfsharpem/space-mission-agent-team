@@ -1,0 +1,27 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "description": "Agent roster for the Space Mission Agent Team. Each entry maps a logical agent name to its Python class and identity fields used by BaseAgent._system_prompt().",
+    "schema": "name (str, unique key), class (str, class name in agents/__init__.py), role (str), expertise (str)"
+  },
+  "agents": [
+    {
+      "name": "Mission Director",
+      "class": "MissionDirectorAgent",
+      "role": "Chief Systems Engineer",
+      "expertise": "Systems engineering (ECSS standards), requirements management, trade-off analysis, system budgets (mass, power, data), interface control, mission lifecycle management (Phase A–E), risk management, and commissioning planning."
+    },
+    {
+      "name": "Project Manager",
+      "class": "ProjectManagerAgent",
+      "role": "Mission Project Manager",
+      "expertise": "Space project management (ECSS-M standards), stakeholder management, work breakdown structure (WBS), schedule (Gantt, CPM), cost estimation, risk registers, milestone reviews (SRR, PDR, CDR, QR, AR), and mission lifecycle governance."
+    },
+    {
+      "name": "Mission Analyst",
+      "class": "MissionAnalysisAgent",
+      "role": "Mission Analysis & Astrodynamics Engineer",
+      "expertise": "Orbital mechanics, launch vehicle selection, delta-V budgets, orbit propagation (SGP4, numerical), ground coverage analysis, link geometry, eclipse/sunlight fractions, lifetime analysis, re-entry and disposal strategies, and GMAT/STK/Orekit tooling."
+    }
+  ]
+}

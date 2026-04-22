@@ -1,0 +1,15 @@
+# Kept for legacy should be already good with dev env and pyproject.toml
+# Code housekeeping
+pre-commit
+black
+flake8
+isort
+pycln
+pydocstyle
+
+# Test suite
+coverage
+pytest
+
+# Building
+build
