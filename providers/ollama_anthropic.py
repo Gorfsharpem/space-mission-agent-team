@@ -21,23 +21,25 @@ class OllamaAnthropicProvider(LLMProvider):
         )
 
     def generate(self, *, system: str, user: str, model: str, max_tokens: int = MAX_TOKENS) -> str:
+        extra = {}
         if NO_THINK:
             # This is a qwen3 specific tuning for disabling thinking mode
             system = f"/no_think\n\n{system}"
             print(system)
+        else:
+            extra["thinking"] = {"type": "enabled", "budget_tokens": 8000}
+        
         response = self.client.messages.create(
             model=model,
             max_tokens=max_tokens,
             system=system,
             messages=[{"role": "user", "content": user}],
+            **extra
         )
-        # Qwen3 and other reasoning models prepend a ThinkingBlock before the TextBlock
-        # Find the first block that actually has text content
-        # This fix is backcompatible with Claude
-        for block in response.content:
-            if hasattr(block, "text"):
-                return block.text
-
-        raise ValueError(
-            f"No TextBlock found in response. Got: {[type(b).__name__ for b in response.content]}"
-        )
+        # Filter out ThinkingBlocks, get first TextBlock
+        text_blocks = [b for b in response.content if isinstance(b, anthropic.types.TextBlock)]
+        
+        if not text_blocks:
+                raise ValueError(f"No TextBlock found in response. Got: {[type(b).__name__ for b in response.content]}")
+            
+        return text_blocks[0].text        
